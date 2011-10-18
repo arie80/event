@@ -29,50 +29,25 @@ class EventActivation{
  */
     public function onActivation(&$controller) {
         // ACL: set ACOs with permissions
-        $controller->Croogo->addAco('Event'); // ExampleController
-        $controller->Croogo->addAco('Event/admin_index'); // ExampleController::admin_index()
-        $controller->Croogo->addAco('Event/index', array('registered', 'public')); // ExampleController::index()
-        $controller->Croogo->addAco('Event/calendar', array('registered', 'public')); // ExampleController::index()
+        $controller->Croogo->addAco('Social/Event');
+        $controller->Croogo->addAco('Social/Event/admin_index');
+        $controller->Croogo->addAco('Social/Event/index', array('registered', 'public', 'verified', 'community-admin'));
+        $controller->Croogo->addAco('Social/Event/calendar', array('registered', 'public', 'verified', 'community-admin'));
         
-		$current_version  = Configure::read('Event.version');
-		if($this->version != $current_version){
-			switch($this->version){
-				case '1.0':
-				default:
-			        // Add a table to the DB
-			        App::import('Core', 'File');
-			        App::import('Model', 'CakeSchema', false);
-					App::import('Model', 'ConnectionManager');
-			
-					$db = ConnectionManager::getDataSource('default');
-					if(!$db->isConnected()) {
-							$this->Session->setFlash(__('Could not connect to database.', true));
-						} else {
-							$schema =& new CakeSchema(array('plugin'=>'event','name'=>'event'));
-							$schema = $schema->load();
-							foreach($schema->tables as $table => $fields) {
-								$create = $db->createSchema($schema, $table);
-								$db->execute($create);
-							} 
-					}      
-			        
-			        // Main menu: add an Example link
-			        $mainMenu = $controller->Link->Menu->findByAlias('main');
-			        $controller->Link->Behaviors->attach('Tree', array(
-			            'scope' => array(
-			                'Link.menu_id' => $mainMenu['Menu']['id'],
-			            ),
-			        ));
-			        $controller->Link->save(array(
-			            'menu_id' => $mainMenu['Menu']['id'],
-			            'title' => 'Events',
-			            'link' => 'plugin:event/controller:event/action:index',
-			            'status' => 1,
-			        ));
-				break;
-	        }
-			$controller->Setting->write('Event.version', $this->version, array('editable' => 0, 'title' => 'Version'));
-		}
+	        $mainMenu = $controller->Link->Menu->findByAlias('main');
+	        $controller->Link->Behaviors->attach('Tree', array(
+		            'scope' => array(
+		                'Link.menu_id' => $mainMenu['Menu']['id'],
+	            ),
+	        ));
+/*
+	        $controller->Link->save(array(
+	            'menu_id' => $mainMenu['Menu']['id'],
+	            'title' => 'Events',
+	            'link' => 'plugin:event/controller:event/action:index',
+	            'status' => 1,
+		        ));
+*/
      }
 /**
  * onDeactivate will be called if this returns true
@@ -91,7 +66,7 @@ class EventActivation{
  */
     public function onDeactivation(&$controller) {
         // ACL: remove ACOs with permissions
-        $controller->Croogo->removeAco('Event'); // ExampleController ACO and it's actions will be removed
+        $controller->Croogo->removeAco('Social/Event'); // ExampleController ACO and it's actions will be removed
 
         // Main menu: delete Event link
         $link = $controller->Link->find('first', array(
