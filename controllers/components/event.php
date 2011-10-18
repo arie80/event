@@ -21,12 +21,16 @@ class EventComponent extends Object {
     public function initialize(&$controller, $settings = array()){
         
         //hook in the has many model
-    	
-    	$controller->Node->bindModel(
-        	array('hasOne'=>array('Event')),
+
+	$controller->Node->bindModel(array(
+			'hasOne' => array(
+				'Event' => array(
+					'className' => 'Event.Event'
+					)
+				)),
         	false
        	);
-        
+
     }
 /**
  * Called after the Controller::beforeRender(), after the view class is loaded, and before the
