@@ -31,12 +31,6 @@ class EventController extends EventAppController {
         
     public function beforeFilter(){
     	parent::beforeFilter();
-    	
-    	$this->Event->bindModel(
-        	array('belongsTo'=>array('Node')),
-        	false
-       	);
-       	
     }
     
     public function admin_index() {
@@ -50,23 +44,32 @@ class EventController extends EventAppController {
     }
 
     public function calendar(){
-		$events = $this->Event->find('all', array('conditions'=>array('Node.status'=>1)));
+		$events = $this->Event->Node->find('all', array(
+			'conditions' => array(
+				'Node.status' => true,
+				'Node.type' => 'events',
+				)
+			)
+		);
 		$json = array();
+		App::import('Helper', 'Text');
+		$text = new TextHelper();
 		foreach($events as $event){
+		$user = $this->Event->Node->User->field('username', array('User.id' => $event['Node']['user_id']));
 				$json[] = array(
-					'id'=>$event['Event']['id'],
-					'title'=>$event['Node']['title'],
-					'start'=>$event['Event']['start_date'],
-//					'end'=>date('Y-m-d', strtotime($event['Page']['end_date'])),
-					'url'=>'/'.$event['Node']['type'].'/'.$event['Node']['slug']
+					'id' => $event['Event']['id'],
+					'title' => $text->truncate($event['Node']['title'], 50, array('html' => true)),
+					'start' => $event['Event']['start_date'],
+					//'end'=>date('Y-m-d', strtotime($event['Event']['end_date'])),
+					'url'=> DS . 'communities' . DS . $event['Node']['type'] . DS . $user . DS . $event['Node']['slug']
 				);
-		}    	
+		}
 		$this->autoLayout = false;
 		$this->set('json', json_encode($json));
     }
     
     public function upcoming(){
-		$events = $this->Event->find('all', array('conditions'=>array('Node.status'=>1, 'Event.start_date >'=>date('Y-m-d H:i'))));
+		$events = $this->Event->Node->find('all', array('conditions'=>array('Node.status'=>true, 'Event.start_date >'=>date('Y-m-d H:i'))));
 		
 		$this->autoLayout = false;
 		$this->autoRender = false;
